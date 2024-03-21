@@ -1,0 +1,29 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.DS_Store
+*.pyc
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+.vscode
+
+# == I/O Optimization ==
+# Input and Output files
+io_optimization/images/
+io_optimization/*_outputs/
+io_optimization/profiles/
+io_optimization/checkpoints/
+io_optimization/benchmarks/
+# Venv
+io_optimization/env/
+
+
+**/__pycache__/
+**/bin/

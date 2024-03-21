@@ -1,0 +1,5 @@
+rest_admin_username: admin
+rest_admin_password: letmein
+rest_port: 31200
+kube_config_path: ~/.kube/config
+log_level: debug

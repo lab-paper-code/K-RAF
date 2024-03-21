@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod1
+  namespace: ksv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: pod1
+    spec:
+      containers:
+      - name: webdav
+        image: yechae/ksv-webdav:v1
+        imagePullPolicy: IfNotPresent 
+        ports:
+        - containerPort: 80
+        # lifecycle:
+        #   preStop:
+        #   exec:
+        #     command: ["/usr/sbin/httpd","-k","graceful-stop"]
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          limits:
+            memory: "200Mi"
+            cpu: "200m"
+        volumeMounts:
+        - mountPath: /uploads
+          name: webdav-storage
+        env:
+          - name: BASIC_AUTH
+            value: "True"
+          - name: WEBDAV_LOGGIN
+            value: "info"
+          - name: WEBDAV_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: pod1-secret
+                key: "user"
+          - name: WEBDAV_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pod1-secret
+                key: "password"
+      volumes:
+      - name: webdav-storage
+        persistentVolumeClaim:
+          claimName: pod1-pvc
+      restartPolicy: Always
+      # uncomment if registry keys are specified
+      #imagePullSecrets:
+      #- name: <secret_name>

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod1-app
+  namespace: ksv
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod1-app
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: pod1-app
+    spec:
+      containers:
+        - name: app-image
+          #image: yechae/ksv-app:v3
+          image: yechae/kube-flask:v2
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 5000
+          volumeMounts:
+          - mountPath: "/mnt"
+            name: volumes
+          resources:
+            requests:
+              cpu: "250m"
+            limits:
+              cpu: "500m"
+        
+      volumes:
+      - name: volumes
+        persistentVolumeClaim:
+          claimName: pod1-pvc
+      restartPolicy: Always
