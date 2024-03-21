@@ -23,7 +23,7 @@
 K-RAF assists edge devices to overcome their limited capabilities by provisioning virtualized computation and storage resources in a Kubernetes environment.
 
 <p align="center">
-  <img align="center" width="50%" src="figures/TSC_ID.PNG"></img>
+  <img align="center" width="75%" src="figures/K-RAF_archtecture.png"></img>
 </p>
 
 K-RAF consists of three modules (Execution Migration Module, Monitoring Module, and Storage Module):
