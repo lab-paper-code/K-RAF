@@ -1,4 +1,6 @@
 # K-RAF
+A Kubernetes-based Resource Augmentation Framework for Edge Devices
+
 <!-- 
 [ACMHPDC'24] K-RAF: A Kubernetes-based Resource Augmentation Framework for Edge Devices
 * [What is TS-trie](#What-is-TS-trie)
