@@ -1,4 +1,4 @@
-# Volume-Service
+# K-RAF
 
 Run the service 
 
@@ -34,7 +34,9 @@ device1 --o volume2
 @enduml
 -->
 
-![object diagram](object_diagram.svg)
+<p align="center">
+  <img align="center" width="50%" src="object_diagram.svg"></img>
+</p>
 
 ## How to run a frontend server
 We use **Svelte** and **Bootstrap5** for running frontend server.
