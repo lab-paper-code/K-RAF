@@ -2,11 +2,11 @@
 **Requirement**.
 - DAVFS2 must be installed on the physical device.
 
-**Edge Server
+** Edge Server
 1. Create a PVC with the Create Volume function.
 2. Run the Mount Volume function with the created volume ID. 
 
-**On a physical device
+** On a physical device
 1. Find the point to mount the PV.
     ex. /mount
 2. Mount it with the webdev server.
