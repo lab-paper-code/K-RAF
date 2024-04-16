@@ -1,3 +1,6 @@
+삭제
+
+
 ## basic setting and docker install
 
 ### SSH 및 방화벽 해제

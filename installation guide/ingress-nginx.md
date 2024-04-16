@@ -1,34 +1,34 @@
-## bare metal 환경에서 ingress nginx 설치 
+## Install ingress nginx in a bare metal environment 
 
-nginx ingress : 1.3.0 버전 설치
-ingress-nignx github 참고해서 kubernetes 버전과 호환되는 버전 설치
+nginx ingress: Install version 1.3.0
+Refer to ingress-nignx github to install a version compatible with your kubernetes version
 
-* master 노드에 nginx ingress설치 하기 위해서 tain 설정 해제
+* Unset tain to install nginx ingress on master node
 ```
 # kubectl describe node master | grep Taints
 Taints: node-role.kubernetes.io/control-plane:NoSchedule
 
-# 설정 해제
- kubectl taint nodes –all node-role.kubernetes.io/master-
+# unset
+ kubectl taint nodes -all node-role.kubernetes.io/master-
 
 ```
-* affinity 설정
-    * nginx ingress를 설치할 노드에 레이블
+* Set affinity
+    * label nodes to install nginx ingress on
 ```
 kubectl label nodes <your-node-name> <key>=<value>
 kubectl label nodes master type=lb
 
-# 조회
+# lookup
 kubectl get nodes --show-labels
 ```
 
-* bare metal용 controller 설치
+* Install controller for bare metal
 ```
  curl -L -o ingress-nginx-controller.yml \
 https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/baremetal/deploy.yaml
 ```
 
-* __controller__, **admission**, **admission-patch** 세 파드는 master or 같은 노드에서 작동하도록 affinity 추가
+* __controller__, **admission**, **admission-patch** The three pods are master or Add affinity to work on the same node
 ```
 # ingress-nginx-controller.yml
 ...
@@ -55,7 +55,7 @@ ingress-nginx-controller-6444cb45b5-nplrt   1/1     Running     5 (4h3m ago)   5
 
 ```
 
-* 베어메탈용 컨트롤러는 NodePort 로 동작함. 이 상태에서 외부 트래픽은 컨트롤러로 바로 접근할 수 없어 LoadBalancer 타입으로 변경해 주어야 합니다.
+* The controller for bare metal behaves as a NodePort. In this state, external traffic cannot directly access the controller and must be changed to the LoadBalancer type.
 ```
 $ kubectl patch svc ingress-nginx-controller -n \
 ingress-nginx -p '{"spec": {"type": "LoadBalancer"}}'
@@ -66,14 +66,14 @@ ingress-nginx-controller             LoadBalancer   10.96.161.225    <pending>  
 ingress-nginx-controller-admission   ClusterIP      10.107.233.129   <none>        443/TCP                      1m
 ```
 
-* LoadBalancer 타입으로 변경되었지만, EXTERNAL-IP 가 <pending> 상태로 할당되고 있지 않아 외부 접근은 여전히 불가능합니다. MetalLB 를 설치하면 외부에서 접근할 수 있으니 진행해 보겠습니다.
+* Although it has been changed to the LoadBalancer type, external access is still not possible because EXTERNAL-IP is not being assigned with a <pending> status. Installing MetalLB will allow external access, so let's proceed.
 
-## MetalLB 설치하기
-[설치 가이드](https://metallb.universe.tf/installation/)      
+## Install MetalLB
+[Installation Guide](https://metallb.universe.tf/installation/)      
 
 
-* 설치 전 k8s 설정 수정
-    * "mode" 를 "ipvs"로, "ipvs.strictARP"를 "true"로 변경 
+* Modify K8S settings before installation
+    * Change "mode" to "ipvs" and "ipvs.strictARP" to "true" 
 ```
 $ kubectl edit configmap -n kube-system kube-proxy
 ===
@@ -84,7 +84,7 @@ ipvs:
   strictARP: true
 ```
 
-* manifest 설치 
+* Install manifest 
 ```
 $ curl -L -o namespace.yml https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
 
@@ -93,21 +93,21 @@ $ curl -L -o metallb.yml https://raw.githubusercontent.com/metallb/metallb/v0.12
 $ vi metallb.yml
 ```
 
-* deployment/controller 및 daemonset/speaker 에 노드 어피니티를 추가해 준 후 설치를 진행
+* Add node affinity to deployment/controller and daemonset/speaker and proceed with the installation
 ```
 $ kubectl apply -f namespace.yml
 $ kubectl apply -f metallb.yml
 ```
 
-* speaker 간 통신시 암호화를 위해 secret 이 필요
+* secret is required for encryption when communicating between speakers
 ```
 $ kubectl create secret generic -n metallb-system \
 memberlist --from-literal=secretKey="$(openssl rand -base64 128)"
 ```
 
-* configmap.yaml 필요
-    * HOST_IP는 현재 노드(마스터)의 ipv4  주소 입력 
-    * ip가 155.230.36.27 일 경우 155.230.36.27-155.230.36.27로 지정 
+* configmap.yaml required
+  * HOST_IP is the ipv4 address of the current node (master) 
+  * If IP is 155.230.36.27, specify 155.230.36.27-155.230.36.27 
 ```
 # configmap.yml
 ---
@@ -129,10 +129,10 @@ data:
 $ kubectl apply -f configmap.yml
 ```
 
-* 조금 기다린 후, 인그레스 컨트롤러의 EXTERNAL-IP 가 할당되는 것 확인하면 끝 
+* After waiting for a while, check that the EXTERNAL-IP of the Ingress Controller is assigned. 
 
 
-* ingress 예시
+* ingress example
 ```
 # ingress-nginx.yml
 ---

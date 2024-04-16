@@ -1,70 +1,70 @@
-[Rook 공식문서](https://rook.io/docs/rook/v1.9/quickstart.html)
+[Rook Official Document](https://rook.io/docs/rook/v1.9/quickstart.html)
 
 rook version : 1.9.10
 ceph version : 16.2.10
 
-## [중요] k8s가 heterogeneous cluster로 구성되었을 때
-* 예를 들어 k8s cluster가 서버 3대와 라즈베리파이 2대로 구성되었을 때
-* 라즈베리파이의 자원을 사용하지 않게 하는 방법입니다.   
+## [Important] When k8s is configured as a heterogeneous cluster.
+* For example, when a k8s cluster consists of three servers and two Raspberry Pi's.
+* This is a way to avoid using the resources of the Raspberry Pi.   
 
-* 아래의 ceph 코드 clone은 동일합니다. clone 후 rook/deploy/examples 로 이동합니다.
-  * crds, common, operator는 그대로 생성해줍니다.
+* Clone the CEPH code below is the same, after cloning go to rook/deploy/examples.
+  * It will create crds, common, and operator as it is.
 ```
 cd rook/deploy/examples
 kubectl create -f crds.yaml -f common.yaml -f operator.yaml
 ```
 
-* 라즈베리 파이인 노드들에 대해 해당 label을 추가해줍니다.
+* Add the corresponding labels for the nodes that are Raspberry Pi's.
 ```
 kubectl label node <raspberrypi_node_name> rookrole=no-rook-node
 ```
 
-* 이후 KSV repository의 k8s/rook-ceph의 cluster.yaml을 실행합니다.
+* Then run cluster.yaml from k8s/rook-ceph in the KSV repository.
 ```
 cd ~/KSV/k8s/
 kubectl create -f cluster.yaml
 ```
 
-* cluster 구성 및 OSD pod가 성공적으로 배포된 후에  rook ceph 설치 - ceph toolbox 설치 부터 진행합니다.
+* After the cluster configuration and OSD pods are successfully deployed, proceed with the rook ceph installation - ceph toolbox installation.
 
-## rook ceph 설치 
+## Install Luke Ceph 
 
-* ceph 코드 clone 받아 오기
+* Get Ceph code clone
 ```
 git clone --single-branch --branch v1.9.10 https://github.com/rook/rook.git
 ```
 
-* ceph cluster 구성
+* Configure a Ceph cluster
 ```
 cd rook/deploy/examples
 kubectl create -f crds.yaml -f common.yaml -f operator.yaml
 kubectl create -f cluster.yaml
 ```
 
-* rook operator 생성
+* Create a Luke operator
 ```
 cd deploy/examples
 kubectl create -f crds.yaml -f common.yaml -f operator.yaml
 
-# verify the rook-ceph-operator is in the `Running` state before proceeding
+# make sure the rook-ceph-operator is in the `running` state before proceeding
 kubectl -n rook-ceph get pod
 ```
 
-* ceph toolbox 설치
-[공식문서](https://rook.io/docs/rook/v1.8/ceph-toolbox.html)
+* Install ceph toolbox
+[Official Document](https://rook.io/docs/rook/v1.8/ceph-toolbox.html)
 ```
-# toolbox 파드 런칭
+# Launch the toolbox Pod
 kubectl create -f deploy/examples/toolbox.yaml
 
-# toolbox 파드 설치 상태 확인
+# Check the toolbox Pod installation status
 kubectl -n rook-ceph rollout status deploy/rook-ceph-tools
-# 파드 런칭이 다 되면 rook-ceph-tools 파드에 접속
+# Access the rook-ceph-tools Pod when the Pod is finished rolling out
 kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- bash
 
-# 아래의 명령어로도 접속 가능
+# You can also access it with the following command
 kubectl -n rook-ceph exec -it $(kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o jsonpath='{.items[0].metadata.name}') -- bash
 ```
-- 아래의 실행 명령어로 ceph 상태 확인 가능
+- You can check the CEPH status by running the following command
     - ceph status
     - ceph osd status
     - ceph df
@@ -74,46 +74,46 @@ kubectl -n rook-ceph exec -it $(kubectl -n rook-ceph get pod -l "app=rook-ceph-t
 
 
 
-* ceph 설치 확인
+* Verify CEPH installation
 ```
 $ kubectl get cephcluster -A
 NAMESPACE   NAME        DATADIRHOSTPATH   MONCOUNT   AGE   PHASE   MESSAGE                        HEALTH      EXTERNAL
 rook-ceph   rook-ceph   /var/lib/rook     3          70m   Ready   Cluster created successfully   HEALTH_OK
 ```
 
-**ceph cluster 구성 완료**
+**Complete CEPH cluster configuration
 
 
 ## Shared Filesystem
-[Rook 공식문서](https://rook.io/docs/rook/v1.9/ceph-filesystem.html)
+[Rook Official Document](https://rook.io/docs/rook/v1.9/ceph-filesystem.html)
 
-* shared filesystem의 정의인 filesystem.yaml 생성
+* Create filesystem.yaml, the definition of the shared file system
 ```
 apiVersion: ceph.rook.io/v1
-kind: CephFilesystem
-metadata:
-  name: myfs
+Type: CephFilesystem
+Metadata:
+  Name: myfs
   namespace: rook-ceph
 spec:
-  metadataPool:
+  Metadatapool:
     replicated:
       size: 3
   dataPools:
     - name: replicated
       replicated:
         size: 3
-  preserveFilesystemOnDelete: true
-  metadataServer:
+  Delete retention file system: true
+  MetadataServers:
     activeCount: 1
     activeStandby: true
 ``` 
-* filesystem 생성
+* Create a filesystem
   * rook/deploy/examples/filesystem.yaml
 ```
-# Create the filesystem
+# Create a filesystem
 kubectl create -f filesystem.yaml
 
-# 생성 확인
+# Verify creation
 kubectl -n rook-ceph get pod -l app=rook-ceph-mds
 
 NAME                                      READY     STATUS    RESTARTS   AGE
@@ -121,7 +121,7 @@ rook-ceph-mds-myfs-7d59fdfcf4-h8kw9       1/1       Running   0          12s
 rook-ceph-mds-myfs-7d59fdfcf4-kgkjp       1/1       Running   0          12s
 ```
 
-* storageclass.yaml 생성
+* Create storageclass.yaml
   * rook/deploy/examples/csi/cephfs/sotrageclass.yamlz
 ```
 apiVersion: storage.k8s.io/v1
@@ -156,13 +156,13 @@ reclaimPolicy: Delete
 ```
 
 ```
-# 해당 파일은 rook/deploy/examples/csi/cephfs/storageclass.yaml에 존재 
-# allowVolumeExpansion: true 만 추가 
+# that file exists in rook/deploy/examples/csi/cephfs/storageclass.yaml 
+# add only allowVolumeExpansion: true 
 kubectl create -f storageclass.yaml
 ```
 
 
-* pvc 생성 테스트
+* Test the PVC creation
 ```
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -178,4 +178,4 @@ spec:
 ```
 
 ### rook-ceph clean delete
-[공식문서](https://rook.io/docs/rook/v1.9/ceph-teardown.html) 참조해서 삭제 할 것.
+[Official Document](https://rook.io/docs/rook/v1.9/ceph-teardown.html) to delete.
